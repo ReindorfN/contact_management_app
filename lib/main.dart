@@ -1,4 +1,3 @@
-// import 'package:contact_management_app/services/side_menu.dart';
 import 'package:contact_management_app/screens/about.dart';
 import "package:flutter/material.dart";
 import 'package:contact_management_app/screens/add_contact.dart';

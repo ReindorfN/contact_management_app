@@ -24,6 +24,7 @@ class Contact {
 class ContactService {
   static const String baseUrl = 'https://apps.ashesi.edu.gh/contactmgt/actions';
 
+//fetching individual contacts
   Future<Contact> getContact(int contid) async {
     final response = await http.get(
       Uri.parse('$baseUrl/get_a_contact_mob?contid=$contid'),
@@ -40,6 +41,7 @@ class ContactService {
     }
   }
 
+//fetching all contacts
   Future<List<Contact>> getAllContacts() async {
     final response = await http.get(
       Uri.parse('$baseUrl/get_all_contact_mob'),
@@ -53,6 +55,7 @@ class ContactService {
     }
   }
 
+//adding contacts
   Future<bool> addContact(String fullname, String phone) async {
     final response = await http.post(
       Uri.parse('$baseUrl/add_contact_mob'),
@@ -68,4 +71,19 @@ class ContactService {
       throw Exception('Failed to add contact');
     }
   }
-} 
+
+  Future<bool> deleteContact(int contactId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/delete_contact'),
+      body: {
+        'cid': contactId.toString(),
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return response.body.toLowerCase() == 'true';
+    } else {
+      throw Exception('Failed to delete contact');
+    }
+  }
+}

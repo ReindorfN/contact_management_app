@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:contact_management_app/main.dart' as app;
 import 'package:contact_management_app/services/contact_service.dart';
+import 'package:contact_management_app/screens/add_contact.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
@@ -27,6 +28,62 @@ class _ContactsPageState extends State<ContactsPage> {
     setState(() {
       _contactsFuture = _loadContacts();
     });
+  }
+
+  Future<void> _deleteContact(Contact contact) async {
+    try {
+      final success = await _contactService.deleteContact(contact.pid);
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Contact deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _refreshContacts();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete contact'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showDeleteDialog(Contact contact) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Contact'),
+        content: Text('Delete ${contact.pname}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteContact(contact);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -70,7 +127,8 @@ class _ContactsPageState extends State<ContactsPage> {
               itemBuilder: (context, index) {
                 final contact = snapshot.data![index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: ListTile(
                     title: Text(contact.pname),
                     subtitle: Text(contact.pphone),
@@ -85,30 +143,7 @@ class _ContactsPageState extends State<ContactsPage> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            // TODO: Implement delete functionality
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete Contact'),
-                                content: Text('Delete ${contact.pname}?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      // TODO: Implement delete
-                                      Navigator.pop(context);
-                                      _refreshContacts();
-                                    },
-                                    child: const Text('Delete'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                          onPressed: () => _showDeleteDialog(contact),
                         ),
                       ],
                     ),
@@ -121,12 +156,16 @@ class _ContactsPageState extends State<ContactsPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Navigate to add contact screen
+          Navigator.of(context)
+              .push(
+                MaterialPageRoute(
+                  builder: (context) => const AddContact(),
+                ),
+              )
+              .then((_) => _refreshContacts());
         },
         child: const Icon(Icons.add),
       ),
     );
   }
 }
-
-
